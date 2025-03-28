@@ -27,10 +27,22 @@ class GameEngine:
         self._clean()
 
     def _create(self):
-        pass
+        #velocidad del rectangulo
+        self.vel_cuad = pygame.Vector2(100,100)
+        
+        #Crear posición rectangulo
+        self.pos_cuad = pygame.Vector2(0,0)
+        size_cuad = pygame.Vector2(50,50)
+        col_cuad = pygame.Color(255,255,50)
+        
+        #superficie rectangulo
+        self.surf_cuad = pygame.Surface(size_cuad)
+        self.surf_cuad.fill(col_cuad)
+    
 
     def _calculate_time(self):
-        pass
+        self.clock.tick(self.framerate)
+        self.delta_time = self.clock.get_time() / 1000.0 #para segundos
     
     
     def _process_events(self):
@@ -39,12 +51,22 @@ class GameEngine:
                 self.is_running = False #terminar el ciclo
 
     def _update(self):
-        pass
+        # avanzamos en X       100 px         POR SEGUNDO 
+        self.pos_cuad.x += self.vel_cuad.x * self.delta_time 
+        # avanzamos en Y       100 px         POR SEGUNDO 
+        self.pos_cuad.y += self.vel_cuad.y * self.delta_time
 
     def _draw(self):
         #decirle al sistema que limpie la pantalla y dibuje lo que necesitamos
         self.screen.fill((0, 200, 128))
+        
+        #### DESPUES DE ####
+        self.screen.blit(self.surf_cuad,self.pos_cuad) #pintar el cuadrado antes de que se presente la pantalla pero despues de haber limpiado
+        #### ANTES DE #####
+        
         pygame.display.flip() #voltear la imagen hacia la pantalla. coge el self screen y lo presenta
+        
+        #pintar el cuadrado antes de que se presente la pantalla pero despues de haber limpiado
         
 
     def _clean(self):
