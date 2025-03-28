@@ -9,25 +9,26 @@ from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
 
+import json
 #F5 para correr
-
+        
 class GameEngine:
+    
     def __init__(self) -> None:
         pygame.init()
-        #Pantalla
-        self.screen = pygame.display.set_mode((640,360), pygame.SCALED)
+        #lectura de los datos de la ventana
+        lectura_json_window(self)
+        
+        self.screen = pygame.display.set_mode(self.size, pygame.SCALED)
         #Reloj para el motor
         self.clock = pygame.time.Clock()
         self.is_running = False
-        #FPS
-        self.framerate = 60
+        
         #Tiempo que ha pasado entre cuadro y cuadro (deltatime)
         self.delta_time = 0
-        
+    
         self.ecs_world = esper.World()
         
-        
-
     def run(self) -> None:
         self._create()
         self.is_running = True
@@ -60,7 +61,7 @@ class GameEngine:
 
     def _draw(self):
         #decirle al sistema que limpie la pantalla y dibuje lo que necesitamos
-        self.screen.fill((0, 200, 128))
+        self.screen.fill(self.bg_color)
         
         system_rendering(self.ecs_world, self.screen)
         pygame.display.flip() #voltear la imagen hacia la pantalla. coge el self screen y lo presenta
@@ -70,3 +71,15 @@ class GameEngine:
 
     def _clean(self):
         pygame.quit()
+
+def lectura_json_window(self):
+        
+        with open('data/window.json','r') as file:
+            data = json.load(file)
+
+        self.title = data["title"]
+        self.size = (data["size"]["w"], data["size"]["h"])  # Tupla (ancho, alto)
+        self.bg_color = (data["bg_color"]["r"], data["bg_color"]["g"], data["bg_color"]["b"])  # Tupla (R, G, B)
+        
+        #FPS
+        self.framerate = data["framerate"]
