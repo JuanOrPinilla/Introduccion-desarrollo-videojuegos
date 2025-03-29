@@ -33,7 +33,7 @@ def system_enemy_spawner(world: esper.World, delta_time):
                 type = enemy['enemy_type']
 
                 # Obtener atributos según el tipo de enemigo
-                enemy_data = getattr(element, f"type_{type[-1]}", None)
+                enemy_data = element.enemies_types.get(type, {})
                 
                 size_x = enemy_data.get("size", {}).get("x", 0)
                 size_y = enemy_data.get("size", {}).get("y", 0)

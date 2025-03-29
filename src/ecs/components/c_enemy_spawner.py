@@ -12,6 +12,8 @@ class CEnemySpawner:
         with open('data/enemies.json','r') as file_enemies:
             enemies_data = json.load(file_enemies)
 
+        self.enemies_types = enemies_data
+        
         self.type_A = enemies_data.get("TypeA", {})
         self.type_B = enemies_data.get("TypeB", {})
         self.type_C = enemies_data.get("TypeC", {})
