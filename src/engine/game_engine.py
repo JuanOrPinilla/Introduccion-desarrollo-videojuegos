@@ -2,6 +2,7 @@ import pygame
 import esper
 
 from src.create.prefab_creator import crear_cuadrado
+from src.create.prefab_creator import crear_enemigos
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
@@ -10,6 +11,8 @@ from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
 
 import json
+
+from src.ecs.systems.s_system_enemy_spawner import system_enemy_spawner
 #F5 para correr
         
 class GameEngine:
@@ -40,10 +43,11 @@ class GameEngine:
         self._clean()
 
     def _create(self):
-        crear_cuadrado(self.ecs_world, 
-                       pygame.Vector2(50,50), pygame.Vector2(150,300),pygame.Vector2(500,500), pygame.Color(100,100,255))
-        crear_cuadrado(self.ecs_world, 
-                       pygame.Vector2(50,50), pygame.Vector2(0,0),pygame.Vector2(1000,100), pygame.Color(255,100,255))
+        crear_enemigos(self.ecs_world)
+        #crear_cuadrado(self.ecs_world, 
+        #               pygame.Vector2(50,50), pygame.Vector2(150,300),pygame.Vector2(500,500), pygame.Color(100,100,255))
+        #crear_cuadrado(self.ecs_world, 
+        #               pygame.Vector2(50,50), pygame.Vector2(0,0),pygame.Vector2(1000,100), pygame.Color(255,100,255))
     def _calculate_time(self):
         self.clock.tick(self.framerate)
         self.delta_time = self.clock.get_time() / 1000.0 #para segundos
@@ -55,6 +59,7 @@ class GameEngine:
                 self.is_running = False #terminar el ciclo
 
     def _update(self):
+        system_enemy_spawner(self.ecs_world, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
         system_screen_bounce(self.ecs_world, self.screen)
             
