@@ -7,20 +7,27 @@ from src.create.prefab_creator import crear_cuadrado
 from src.ecs.components.c_enemy_spawner import CEnemySpawner
 
 enemigos_generados = set()
+tiempo_total = 0 
 
 def system_enemy_spawner(world: esper.World, delta_time):
+    global tiempo_total
+    tiempo_total += delta_time  # Acumula el tiempo total transcurrido en el juego
+
     components = world.get_components(CEnemySpawner)
-    
+
     for entity, (level_info) in components:
         for element in level_info:
             for enemy in element.spawn_events:
-
+                time_spawn = enemy['time']
+                
                 # Crear un identificador único para cada enemigo
                 enemy_id = (enemy['position']['x'], enemy['position']['y'], enemy['enemy_type'])
-                if enemy_id in enemigos_generados:
+
+                # Verificar si ya ha sido generado o si aún no ha llegado su tiempo de aparición
+                if enemy_id in enemigos_generados or tiempo_total < time_spawn:
                     continue 
-                
-                enemigos_generados.add(enemy_id) #Marcar com creado
+
+                enemigos_generados.add(enemy_id)  # Marcar como creado
                 
                 pos = pygame.Vector2(enemy['position']['x'], enemy['position']['y'])
                 type = enemy['enemy_type']
@@ -43,5 +50,5 @@ def system_enemy_spawner(world: esper.World, delta_time):
                 v_y = random.uniform(v_min, v_max)  # Velocidad en y
                 vel = pygame.Vector2(v_x, v_y) 
                 color = pygame.Color(r, g, b)  
-                
+
                 crear_cuadrado(world, size, pos, vel, color)  # Crear el enemigo

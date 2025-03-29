@@ -44,13 +44,10 @@ class GameEngine:
 
     def _create(self):
         crear_enemigos(self.ecs_world)
-        #crear_cuadrado(self.ecs_world, 
-        #               pygame.Vector2(50,50), pygame.Vector2(150,300),pygame.Vector2(500,500), pygame.Color(100,100,255))
-        #crear_cuadrado(self.ecs_world, 
-        #               pygame.Vector2(50,50), pygame.Vector2(0,0),pygame.Vector2(1000,100), pygame.Color(255,100,255))
+
+
     def _calculate_time(self):
-        self.clock.tick(self.framerate)
-        self.delta_time = self.clock.get_time() / 1000.0 #para segundos
+        self.delta_time = self.clock.tick(self.framerate) / 1000.0  # Delta en segundos
     
     
     def _process_events(self):
