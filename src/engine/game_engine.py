@@ -12,7 +12,7 @@ from src.ecs.systems.s_screen_bounce import system_screen_bounce
 
 import json
 
-from src.ecs.systems.s_system_enemy_spawner import system_enemy_spawner
+from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
 #F5 para correr
         
 class GameEngine:
