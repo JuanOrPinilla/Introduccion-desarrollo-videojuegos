@@ -76,7 +76,7 @@ class GameEngine:
 
 def lectura_json_window(self):
         
-        with open('data/window.json','r') as file:
+        with open('assets/cfg/window.json','r') as file:
             data = json.load(file)
 
         self.title = data["title"]

@@ -32,11 +32,9 @@ def system_enemy_spawner(world: esper.World, delta_time):
                 pos = pygame.Vector2(enemy['position']['x'], enemy['position']['y'])
                 type = enemy['enemy_type']
 
-                # Obtener atributos según el tipo de enemigo
-                enemy_data = getattr(element, f"type_{type[-1]}", None)
-                if not enemy_data:
-                    continue  # Si el tipo no es válido, ignorarlo
-                
+                # Obtener atributos según el tipo de enemigo desde el diccionario dinámico
+                enemy_data = element.enemies_types.get(type, {})
+
                 size_x = enemy_data.get("size", {}).get("x", 0)
                 size_y = enemy_data.get("size", {}).get("y", 0)
                 v_min = enemy_data.get("velocity_min", 0)
