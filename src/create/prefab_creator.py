@@ -21,7 +21,8 @@ def crear_cuadrado(ecs_world:esper.World,
                                     CTransform(pos))
     ecs_world.add_component(cuad_entity,
                                     CVelocity(vel))
-
+  
+    
 def crear_cuadrado_enemigo(world:esper.World, pos:pygame.Vector2,enemy_info:dict):
     size = pygame.Vector2(enemy_info["size"]["x"],
                           enemy_info["size"]["y"])   
@@ -34,7 +35,18 @@ def crear_cuadrado_enemigo(world:esper.World, pos:pygame.Vector2,enemy_info:dict
     velocity = pygame.Vector2(random.choice([-vel_range, vel_range]),
                               random.choice([-vel_range, vel_range]))
     crear_cuadrado(world,size,pos,velocity,color)
-    
+
+def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dict):
+    size = pygame.Vector2(player_info["size"]["x"],
+                          player_info["size"]["y"])
+    pos = pygame.Vector2( player_lvl_info["position"]["x"] - (size.x/2),
+                         player_lvl_info["position"]["y"]-(size.y/2))
+    vel = pygame.Vector2(0,0)
+    color = pygame.Color(player_info["color"]["r"],
+                        player_info["color"]["g"],
+                        player_info["color"]["b"]) 
+    crear_cuadrado(world,size,pos,vel,color)
+
 def crear_spawner(ecs_world:esper.World, level_data:dict):
     spawner_entity = ecs_world.create_entity() #devuelve un entero
     ecs_world.add_component(spawner_entity,
