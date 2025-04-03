@@ -2,6 +2,7 @@ import pygame
 import esper
 
 from src.create.prefab_creator import crear_spawner, create_player_square
+from src.ecs.components.c_velocity import CVelocity
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
@@ -41,7 +42,8 @@ class GameEngine:
         self._clean()
 
     def _create(self):
-        create_player_square(self.ecs_world, self.player_cfg,self.level_01_cfg["player_spawn"])
+        self._player_entity = create_player_square(self.ecs_world, self.player_cfg,self.level_01_cfg["player_spawn"])
+        self._player_c_vel = self.ecs_world.component_for_entity(self._player_entity, CVelocity)
         crear_spawner(self.ecs_world, self.level_01_cfg)
 
 

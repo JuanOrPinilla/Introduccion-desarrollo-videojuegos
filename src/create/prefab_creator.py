@@ -6,13 +6,11 @@ from src.ecs.components.c_enemy_spawner import CEnemySpawner
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
+from src.ecs.components.tags.c_tag_enemy import CTagEnemy
+from src.ecs.components.tags.c_tag_player import CTagPlayer
       
-def crear_cuadrado(ecs_world:esper.World,
-                   size:pygame.Vector2,
-                   pos:pygame.Vector2,
-                   vel:pygame.Vector2,
-                   col:pygame.Color
-                   ):
+def crear_cuadrado(ecs_world:esper.World,size:pygame.Vector2,pos:pygame.Vector2,
+                   vel:pygame.Vector2,col:pygame.Color) -> int:
     
     cuad_entity = ecs_world.create_entity() #devuelve un entero
     ecs_world.add_component(cuad_entity,
@@ -21,6 +19,7 @@ def crear_cuadrado(ecs_world:esper.World,
                                     CTransform(pos))
     ecs_world.add_component(cuad_entity,
                                     CVelocity(vel))
+    return cuad_entity
   
     
 def crear_cuadrado_enemigo(world:esper.World, pos:pygame.Vector2,enemy_info:dict):
@@ -34,7 +33,8 @@ def crear_cuadrado_enemigo(world:esper.World, pos:pygame.Vector2,enemy_info:dict
     vel_range = random.randrange(vel_min, vel_max)
     velocity = pygame.Vector2(random.choice([-vel_range, vel_range]),
                               random.choice([-vel_range, vel_range]))
-    crear_cuadrado(world,size,pos,velocity,color)
+    enemy_entity = crear_cuadrado(world,size,pos,velocity,color)
+    world.add_component(enemy_entity,CTagEnemy)
 
 def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dict):
     size = pygame.Vector2(player_info["size"]["x"],
@@ -45,7 +45,9 @@ def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dic
     color = pygame.Color(player_info["color"]["r"],
                         player_info["color"]["g"],
                         player_info["color"]["b"]) 
-    crear_cuadrado(world,size,pos,vel,color)
+    player_entity = crear_cuadrado(world,size,pos,vel,color)
+    world.add_component(player_entity,CTagPlayer)
+    return player_entity
 
 def crear_spawner(ecs_world:esper.World, level_data:dict):
     spawner_entity = ecs_world.create_entity() #devuelve un entero
