@@ -1,7 +1,7 @@
 import pygame
 import esper
 
-from src.create.prefab_creator import crear_spawner
+from src.create.prefab_creator import crear_spawner, create_player_square
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
@@ -41,6 +41,7 @@ class GameEngine:
         self._clean()
 
     def _create(self):
+        create_player_square(self.ecs_world, self.player_cfg,self.level_01_cfg["player_spawn"])
         crear_spawner(self.ecs_world, self.level_01_cfg)
 
 
@@ -80,5 +81,7 @@ class GameEngine:
             self.level_01_cfg = json.load(level_file)
         with open('assets/cfg/enemies.json','r') as enemies_file:
             self.enemies_cfg = json.load(enemies_file)
+        with open('assets/cfg/player.json','r') as player_file:
+            self.player_cfg = json.load(player_file)
 
         
