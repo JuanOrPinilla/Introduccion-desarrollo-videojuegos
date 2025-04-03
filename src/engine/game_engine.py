@@ -1,11 +1,7 @@
 import pygame
 import esper
 
-from src.create.prefab_creator import crear_cuadrado
-from src.create.prefab_creator import crear_enemigos
-from src.ecs.components.c_surface import CSurface
-from src.ecs.components.c_transform import CTransform
-from src.ecs.components.c_velocity import CVelocity
+from src.create.prefab_creator import crear_spawner
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
@@ -18,17 +14,19 @@ from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
 class GameEngine:
     
     def __init__(self) -> None:
+        self._load_config_files()
         pygame.init()
-        #lectura de los datos de la ventana
-        lectura_json_window(self)
-        
-        self.screen = pygame.display.set_mode(self.size, pygame.SCALED)
+
+        self.screen = pygame.display.set_mode((self.window_cfg["size"]["w"],self.window_cfg["size"]["h"]), pygame.SCALED)
         #Reloj para el motor
         self.clock = pygame.time.Clock()
         self.is_running = False
-        
+        self.framerate = self.window_cfg["framerate"]
         #Tiempo que ha pasado entre cuadro y cuadro (deltatime)
         self.delta_time = 0
+        self.bg_color = pygame.Color(self.window_cfg["bg_color"]["r"],
+                                     self.window_cfg["bg_color"]["g"],
+                                     self.window_cfg["bg_color"]["b"])
     
         self.ecs_world = esper.World()
         
@@ -43,7 +41,7 @@ class GameEngine:
         self._clean()
 
     def _create(self):
-        crear_enemigos(self.ecs_world)
+        crear_spawner(self.ecs_world, self.level_01_cfg)
 
 
     def _calculate_time(self):
@@ -56,7 +54,7 @@ class GameEngine:
                 self.is_running = False #terminar el ciclo
 
     def _update(self):
-        system_enemy_spawner(self.ecs_world, self.delta_time)
+        system_enemy_spawner(self.ecs_world,self.enemies_cfg, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
         system_screen_bounce(self.ecs_world, self.screen)
             
@@ -74,14 +72,13 @@ class GameEngine:
     def _clean(self):
         pygame.quit()
 
-def lectura_json_window(self):
-        
-        with open('assets/cfg/window.json','r') as file:
-            data = json.load(file)
 
-        self.title = data["title"]
-        self.size = (data["size"]["w"], data["size"]["h"])  # Tupla (ancho, alto)
-        self.bg_color = (data["bg_color"]["r"], data["bg_color"]["g"], data["bg_color"]["b"])  # Tupla (R, G, B)
+    def _load_config_files(self):
+        with open('assets/cfg/window.json','r') as window_file:
+                self.window_cfg = json.load(window_file)       
+        with open('assets/cfg/level_01.json','r') as level_file:
+            self.level_01_cfg = json.load(level_file)
+        with open('assets/cfg/enemies.json','r') as enemies_file:
+            self.enemies_cfg = json.load(enemies_file)
+
         
-        #FPS
-        self.framerate = data["framerate"]
