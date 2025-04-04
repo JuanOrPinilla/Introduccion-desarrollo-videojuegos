@@ -1,9 +1,12 @@
 import pygame
 import esper
 
-from src.create.prefab_creator import crear_spawner, create_input_player, create_player_square
+from src.create.prefab_creator import crear_spawner, create_bullet_square, create_input_player, create_player_square
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_velocity import CVelocity
+from src.ecs.components.tags.c_tag_bullet import CTagBullet
+from src.ecs.systems.s_collision_bullet_border import system_collision_bullet_screen
+from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
 from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
 from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
@@ -13,6 +16,7 @@ from src.ecs.systems.s_screen_bounce import system_screen_bounce
 import json
 
 from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
+from src.ecs.systems.s_screen_limit import system_screen_limit
 #F5 para correr
         
 class GameEngine:
@@ -31,7 +35,7 @@ class GameEngine:
         self.bg_color = pygame.Color(self.window_cfg["bg_color"]["r"],
                                      self.window_cfg["bg_color"]["g"],
                                      self.window_cfg["bg_color"]["b"])
-    
+        self.current_bullet = 0
         self.ecs_world = esper.World()
         
     def run(self) -> None:
@@ -65,7 +69,10 @@ class GameEngine:
         system_enemy_spawner(self.ecs_world,self.enemies_cfg, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
         system_screen_bounce(self.ecs_world, self.screen)
+        system_screen_limit(self.ecs_world,self.screen)
         system_collision_player_enemy(self.ecs_world,self._player_entity, self.level_01_cfg)
+        system_collision_bullet_enemy(self.ecs_world)
+        system_collision_bullet_screen(self.ecs_world,self.screen)
         self.ecs_world._clear_dead_entities()
             
 
@@ -82,31 +89,44 @@ class GameEngine:
         pygame.quit()
 
     def _do_action(self, c_input:CInputCommand):
+        
         if c_input.name == "PLAYER_LEFT":
             if c_input.phase == CommandPhase.START:
-                self._player_c_vel.vel.x -= self.player_cfg["input_velocity"]
+                self._player_c_vel.vel.x = -self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
-                self._player_c_vel.vel.x += self.player_cfg["input_velocity"]
-                
+                if self._player_c_vel.vel.x < 0:
+                    self._player_c_vel.vel.x = 0
+
         if c_input.name == "PLAYER_RIGHT":
             if c_input.phase == CommandPhase.START:
-                self._player_c_vel.vel.x += self.player_cfg["input_velocity"]
+                self._player_c_vel.vel.x = self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
-                self._player_c_vel.vel.x -= self.player_cfg["input_velocity"]
-                
-        if c_input.name == "PLAYER_DOWN":
-            if c_input.phase == CommandPhase.START:
-                self._player_c_vel.vel.y += self.player_cfg["input_velocity"]
-            elif c_input.phase == CommandPhase.END:
-                self._player_c_vel.vel.y -= self.player_cfg["input_velocity"]
+                if self._player_c_vel.vel.x > 0:
+                    self._player_c_vel.vel.x = 0
+
                 
         if c_input.name == "PLAYER_UP":
             if c_input.phase == CommandPhase.START:
-                self._player_c_vel.vel.y -= self.player_cfg["input_velocity"]
+                self._player_c_vel.vel.y = -self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
-                self._player_c_vel.vel.y += self.player_cfg["input_velocity"]
-                
-                
+                if self._player_c_vel.vel.y < 0:
+                    self._player_c_vel.vel.y = 0
+
+        if c_input.name == "PLAYER_DOWN":
+            if c_input.phase == CommandPhase.START:
+                self._player_c_vel.vel.y = self.player_cfg["input_velocity"]
+            elif c_input.phase == CommandPhase.END:
+                if self._player_c_vel.vel.y > 0:
+                    self._player_c_vel.vel.y = 0
+        
+        if c_input.name == "PLAYER_FIRE":
+            active_bullets = len(self.ecs_world.get_components(CTagBullet))
+
+            if active_bullets < self.level_01_cfg["player_spawn"]["max_bullets"]:
+                if c_input.phase == CommandPhase.START:
+                    mouse_pos = pygame.mouse.get_pos()
+                    create_bullet_square(self.ecs_world, self._player_entity, self.bullet_cfg, mouse_pos)
+
 
     def _load_config_files(self):
         with open('assets/cfg/window.json','r') as window_file:
@@ -117,6 +137,8 @@ class GameEngine:
             self.enemies_cfg = json.load(enemies_file)
         with open('assets/cfg/player.json','r') as player_file:
             self.player_cfg = json.load(player_file)
+        with open('assets/cfg/bullet.json','r') as bullet_file:
+            self.bullet_cfg = json.load(bullet_file)
     
         
 
