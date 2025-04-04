@@ -1,8 +1,10 @@
 import pygame
 import esper
 
-from src.create.prefab_creator import crear_spawner, create_player_square
+from src.create.prefab_creator import crear_spawner, create_input_player, create_player_square
+from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_velocity import CVelocity
+from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
@@ -45,6 +47,7 @@ class GameEngine:
         self._player_entity = create_player_square(self.ecs_world, self.player_cfg,self.level_01_cfg["player_spawn"])
         self._player_c_vel = self.ecs_world.component_for_entity(self._player_entity, CVelocity)
         crear_spawner(self.ecs_world, self.level_01_cfg)
+        create_input_player(self.ecs_world)
 
 
     def _calculate_time(self):
@@ -53,6 +56,7 @@ class GameEngine:
     
     def _process_events(self):
         for event in pygame.event.get(): #Da una lista de eventos
+            system_input_player(self.ecs_world, event, self._do_action)
             if event.type == pygame.QUIT: #cuando se cierra con la X la ventana o uno presiona alt F4
                 self.is_running = False #terminar el ciclo
 
@@ -75,6 +79,8 @@ class GameEngine:
     def _clean(self):
         pygame.quit()
 
+    def _do_action(self, c_input:CInputCommand):
+        print(c_input.name + " " + str(c_input.phase))
 
     def _load_config_files(self):
         with open('assets/cfg/window.json','r') as window_file:
@@ -85,5 +91,7 @@ class GameEngine:
             self.enemies_cfg = json.load(enemies_file)
         with open('assets/cfg/player.json','r') as player_file:
             self.player_cfg = json.load(player_file)
+    
+        
 
         
