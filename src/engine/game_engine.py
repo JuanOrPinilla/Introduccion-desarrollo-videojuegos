@@ -2,8 +2,9 @@ import pygame
 import esper
 
 from src.create.prefab_creator import crear_spawner, create_input_player, create_player_square
-from src.ecs.components.c_input_command import CInputCommand
+from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_velocity import CVelocity
+from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
 from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
@@ -64,6 +65,8 @@ class GameEngine:
         system_enemy_spawner(self.ecs_world,self.enemies_cfg, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
         system_screen_bounce(self.ecs_world, self.screen)
+        system_collision_player_enemy(self.ecs_world,self._player_entity, self.level_01_cfg)
+        self.ecs_world._clear_dead_entities()
             
 
     def _draw(self):
@@ -73,14 +76,37 @@ class GameEngine:
         system_rendering(self.ecs_world, self.screen)
         pygame.display.flip() #voltear la imagen hacia la pantalla. coge el self screen y lo presenta
         
-        #pintar el cuadrado antes de que se presente la pantalla pero despues de haber limpiado
-        
 
     def _clean(self):
+        self.ecs_world.clear_database()
         pygame.quit()
 
     def _do_action(self, c_input:CInputCommand):
-        print(c_input.name + " " + str(c_input.phase))
+        if c_input.name == "PLAYER_LEFT":
+            if c_input.phase == CommandPhase.START:
+                self._player_c_vel.vel.x -= self.player_cfg["input_velocity"]
+            elif c_input.phase == CommandPhase.END:
+                self._player_c_vel.vel.x += self.player_cfg["input_velocity"]
+                
+        if c_input.name == "PLAYER_RIGHT":
+            if c_input.phase == CommandPhase.START:
+                self._player_c_vel.vel.x += self.player_cfg["input_velocity"]
+            elif c_input.phase == CommandPhase.END:
+                self._player_c_vel.vel.x -= self.player_cfg["input_velocity"]
+                
+        if c_input.name == "PLAYER_DOWN":
+            if c_input.phase == CommandPhase.START:
+                self._player_c_vel.vel.y += self.player_cfg["input_velocity"]
+            elif c_input.phase == CommandPhase.END:
+                self._player_c_vel.vel.y -= self.player_cfg["input_velocity"]
+                
+        if c_input.name == "PLAYER_UP":
+            if c_input.phase == CommandPhase.START:
+                self._player_c_vel.vel.y -= self.player_cfg["input_velocity"]
+            elif c_input.phase == CommandPhase.END:
+                self._player_c_vel.vel.y += self.player_cfg["input_velocity"]
+                
+                
 
     def _load_config_files(self):
         with open('assets/cfg/window.json','r') as window_file:
