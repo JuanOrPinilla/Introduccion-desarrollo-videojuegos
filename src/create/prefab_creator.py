@@ -13,6 +13,7 @@ from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
 from src.ecs.components.tags.c_tag_explosion import CTagExplosion
+from src.ecs.components.tags.c_tag_hunter import CTagHunter
 from src.ecs.components.tags.c_tag_player import CTagPlayer
       
 def crear_cuadrado(ecs_world:esper.World,size:pygame.Vector2,pos:pygame.Vector2,
@@ -45,13 +46,15 @@ def crear_cuadrado_enemigo(world: esper.World, pos: pygame.Vector2, enemy_info: 
             random.choice([-vel_range, vel_range]),
             random.choice([-vel_range, vel_range])
         )
+        enemy_entity = create_sprite(world, pos, velocity, enemy_surface)
+        world.add_component(enemy_entity, CTagEnemy())
     else:
         velocity = pygame.Vector2(0, 0)
         size = enemy_surface.get_size()
         size = (size[0] / enemy_info["animations"]["number_frames"] , size[1])
-
-    enemy_entity = create_sprite(world, pos, velocity, enemy_surface)
-    world.add_component(enemy_entity, CTagEnemy())
+        hunter_entity = create_sprite(world, pos, velocity, enemy_surface)
+        world.add_component(hunter_entity, CTagHunter())
+        world.add_component(hunter_entity, CAnimation(enemy_info["animations"]))
 
 
 
