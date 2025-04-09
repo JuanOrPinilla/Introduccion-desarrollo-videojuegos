@@ -10,6 +10,7 @@ from src.ecs.systems.s_collision_bullet_border import system_collision_bullet_sc
 from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
 from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
 from src.ecs.systems.s_explosion_state import system_explosion_state
+from src.ecs.systems.s_hunter_persecution import system_persecution_player_hunter
 from src.ecs.systems.s_hunter_state import system_hunter_state
 from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
@@ -80,6 +81,9 @@ class GameEngine:
         system_screen_limit(self.ecs_world,self.screen)
         system_collision_player_enemy(self.ecs_world,self._player_entity, self.level_01_cfg)
         system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg)
+        
+        system_persecution_player_hunter(self.ecs_world,self._player_entity, self.level_01_cfg, self.enemies_cfg["Hunter"])
+         
         system_collision_bullet_screen(self.ecs_world,self.screen)
         system_animation(self.ecs_world, self.delta_time)
         system_explosion_state(self.ecs_world, self.delta_time)
