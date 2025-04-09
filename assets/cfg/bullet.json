@@ -1,4 +1,5 @@
-{
+{   
+    "image": "assets/img/bullet.png",
     "size": {
         "x": 5,
         "y": 5

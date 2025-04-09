@@ -16,7 +16,7 @@ def system_screen_limit(world:esper.World, screen:pygame.Surface):
     c_s:CSurface
     
     for entity, (c_t, c_v, c_s, c_p) in components:
-        cuad_rect = c_s.surf.get_rect(topleft=c_t.pos)
+        cuad_rect = CSurface.get_area_relative(c_s.area, c_t.pos)
         # Límite izquierdo
         if cuad_rect.left < 0:
             c_t.pos.x = 0
