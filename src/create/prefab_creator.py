@@ -5,6 +5,7 @@ import pygame
 from src.ecs.components.c_animation import CAnimation
 from src.ecs.components.c_enemy_spawner import CEnemySpawner
 from src.ecs.components.c_explosion_state import CExplosionState
+from src.ecs.components.c_hunter_state import CHunterState
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_player_state import CPlayerState
 from src.ecs.components.c_surface import CSurface
@@ -55,6 +56,8 @@ def crear_cuadrado_enemigo(world: esper.World, pos: pygame.Vector2, enemy_info: 
         hunter_entity = create_sprite(world, pos, velocity, enemy_surface)
         world.add_component(hunter_entity, CTagHunter())
         world.add_component(hunter_entity, CAnimation(enemy_info["animations"]))
+        world.add_component(hunter_entity, CHunterState())
+        world.add_component(hunter_entity, CTagEnemy())
 
 
 
