@@ -1,18 +1,18 @@
-{   
+{
     "image": "assets/img/player.png",
     "animations": {
-        "number_frames":4,
+        "number_frames": 4,
         "list": [
             {
                 "name": "MOVE",
-                "start": 1,
+                "start": 0,
                 "end": 3,
                 "framerate": 10
             },
             {
                 "name": "IDLE",
                 "start": 0,
-                "end":0,
+                "end": 0,
                 "framerate": 1
             }
         ]

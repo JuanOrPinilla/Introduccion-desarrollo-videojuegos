@@ -9,6 +9,7 @@ from src.ecs.systems.s_animation import system_animation
 from src.ecs.systems.s_collision_bullet_border import system_collision_bullet_screen
 from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
 from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
+from src.ecs.systems.s_explosion_animation import system_explosion_animation
 from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_player_state import system_player_state
@@ -76,9 +77,10 @@ class GameEngine:
         system_screen_bounce(self.ecs_world, self.screen)
         system_screen_limit(self.ecs_world,self.screen)
         system_collision_player_enemy(self.ecs_world,self._player_entity, self.level_01_cfg)
-        system_collision_bullet_enemy(self.ecs_world)
+        system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg)
         system_collision_bullet_screen(self.ecs_world,self.screen)
         system_animation(self.ecs_world, self.delta_time)
+        system_explosion_animation(self.ecs_world, self.delta_time)
         self.ecs_world._clear_dead_entities()
             
 
@@ -145,6 +147,8 @@ class GameEngine:
             self.player_cfg = json.load(player_file)
         with open('assets/cfg/bullet.json','r') as bullet_file:
             self.bullet_cfg = json.load(bullet_file)
+        with open('assets/cfg/explosion.json','r') as explosion_file:
+            self.explosion_cfg = json.load(explosion_file)
     
         
 

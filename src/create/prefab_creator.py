@@ -11,6 +11,7 @@ from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
+from src.ecs.components.tags.c_tag_explosion import CTagExplosion
 from src.ecs.components.tags.c_tag_player import CTagPlayer
       
 def crear_cuadrado(ecs_world:esper.World,size:pygame.Vector2,pos:pygame.Vector2,
@@ -55,6 +56,16 @@ def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dic
     world.add_component(player_entity, CPlayerState())
     return player_entity
 
+def create_explosion_square(world:esper.World, explosion_cfg:dict,c_e_pos:pygame.Vector2):
+    explosion_surface = pygame.image.load(explosion_cfg["image"])
+    pos = c_e_pos
+    vel = pygame.Vector2(0,0)
+    
+    explosion_entity = create_sprite(world,pos,vel,explosion_surface)
+    world.add_component(explosion_entity,CTagExplosion())
+    world.add_component(explosion_entity, CAnimation(explosion_cfg["animations"]))
+    return explosion_entity
+    
 def create_bullet_square(world: esper.World, player_entity: int, bullet_info: dict, mouse_pos: tuple):
     
     p_transform = world.component_for_entity(player_entity, CTransform)
