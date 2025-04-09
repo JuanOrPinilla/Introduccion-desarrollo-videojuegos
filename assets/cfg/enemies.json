@@ -41,8 +41,6 @@
         "velocity_chase": 75,
         "velocity_return": 100,
         "distance_start_chase": 100,
-        "distance_start_return": 200,
-        "velocity_min": 0,
-        "velocity_max": 1
+        "distance_start_return": 200
     }
 }

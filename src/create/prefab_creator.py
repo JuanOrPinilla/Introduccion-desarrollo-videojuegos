@@ -4,6 +4,7 @@ import pygame
 
 from src.ecs.components.c_animation import CAnimation
 from src.ecs.components.c_enemy_spawner import CEnemySpawner
+from src.ecs.components.c_explosion_state import CExplosionState
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_player_state import CPlayerState
 from src.ecs.components.c_surface import CSurface
@@ -33,15 +34,27 @@ def create_sprite(ecs_world: esper.World, pos: pygame.Vector2, vel:pygame.Vector
     ecs_world.add_component(sprite_entity, CSurface.from_surface(surface))
     return sprite_entity
     
-def crear_cuadrado_enemigo(world:esper.World, pos:pygame.Vector2,enemy_info:dict):
+def crear_cuadrado_enemigo(world: esper.World, pos: pygame.Vector2, enemy_info: dict):
     enemy_surface = pygame.image.load(enemy_info["image"]).convert_alpha()
-    vel_max = enemy_info["velocity_max"]
-    vel_min = enemy_info["velocity_min"]
-    vel_range = random.randrange(vel_min, vel_max)
-    velocity = pygame.Vector2(random.choice([-vel_range, vel_range]),
-                              random.choice([-vel_range, vel_range]))
-    enemy_entity = create_sprite(world,pos,velocity,enemy_surface)
-    world.add_component(enemy_entity,CTagEnemy())
+    if "velocity_min" in enemy_info and "velocity_max" in enemy_info:
+        # Es un asteroide
+        vel_min = enemy_info["velocity_min"]
+        vel_max = enemy_info["velocity_max"]
+        vel_range = random.randrange(vel_min, vel_max)
+        velocity = pygame.Vector2(
+            random.choice([-vel_range, vel_range]),
+            random.choice([-vel_range, vel_range])
+        )
+    else:
+        velocity = pygame.Vector2(0, 0)
+        size = enemy_surface.get_size()
+        size = (size[0] / enemy_info["animations"]["number_frames"] , size[1])
+
+    enemy_entity = create_sprite(world, pos, velocity, enemy_surface)
+    world.add_component(enemy_entity, CTagEnemy())
+
+
+
 
 def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dict):
     player_surface = pygame.image.load(player_info["image"]).convert_alpha()
@@ -64,6 +77,7 @@ def create_explosion_square(world:esper.World, explosion_cfg:dict,c_e_pos:pygame
     explosion_entity = create_sprite(world,pos,vel,explosion_surface)
     world.add_component(explosion_entity,CTagExplosion())
     world.add_component(explosion_entity, CAnimation(explosion_cfg["animations"]))
+    world.add_component(explosion_entity, CExplosionState())
     return explosion_entity
     
 def create_bullet_square(world: esper.World, player_entity: int, bullet_info: dict, mouse_pos: tuple):
