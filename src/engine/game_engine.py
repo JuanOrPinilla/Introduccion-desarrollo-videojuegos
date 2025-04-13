@@ -35,6 +35,7 @@ class GameEngine:
         self.clock = pygame.time.Clock()
         self.is_running = False
         self.framerate = self.window_cfg["framerate"]
+        self.title = pygame.display.set_caption(self.window_cfg["title"])
         #Tiempo que ha pasado entre cuadro y cuadro (deltatime)
         self.delta_time = 0
         self.bg_color = pygame.Color(self.window_cfg["bg_color"]["r"],
