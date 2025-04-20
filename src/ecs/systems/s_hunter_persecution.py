@@ -5,6 +5,7 @@ from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_hunter import CTagHunter
+from src.engine.service_locator import ServiceLocator
 
 def system_persecution_player_hunter(world:esper.World, player_entity:int, level_cfg:dict, hunter_cfg:dict):
     v_chase = hunter_cfg["velocity_chase"]
@@ -40,6 +41,7 @@ def system_persecution_player_hunter(world:esper.World, player_entity:int, level
 
         # INICIO persecución si jugador está cerca
         if not c_h.chasing and distance_to_player <= d_chase:
+            ServiceLocator.sounds_service.play(hunter_cfg["sound_chase"])
             c_h.chasing = True
         # DETIENE persecución si hunter se aleja demasiado de su posición original
         elif c_h.chasing and distance_to_origin > d_start_return:
@@ -61,4 +63,4 @@ def system_persecution_player_hunter(world:esper.World, player_entity:int, level
         else:
             c_v.vel = pygame.Vector2(0, 0)
             if not c_h.chasing:
-                c_t.pos = c_h.initial_pos.copy()  # corrige posición exacta si ya regresó
+                c_t.pos = c_h.initial_pos.copy() 

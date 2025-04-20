@@ -16,6 +16,7 @@ from src.ecs.components.tags.c_tag_enemy import CTagEnemy
 from src.ecs.components.tags.c_tag_explosion import CTagExplosion
 from src.ecs.components.tags.c_tag_hunter import CTagHunter
 from src.ecs.components.tags.c_tag_player import CTagPlayer
+from src.engine.service_locator import ServiceLocator
       
 def crear_cuadrado(ecs_world:esper.World,size:pygame.Vector2,pos:pygame.Vector2,
                    vel:pygame.Vector2,col:pygame.Color) -> int:
@@ -37,7 +38,7 @@ def create_sprite(ecs_world: esper.World, pos: pygame.Vector2, vel:pygame.Vector
     return sprite_entity
     
 def crear_cuadrado_enemigo(world: esper.World, pos: pygame.Vector2, enemy_info: dict):
-    enemy_surface = pygame.image.load(enemy_info["image"]).convert_alpha()
+    enemy_surface = ServiceLocator.images_service.get(enemy_info["image"])
     if "velocity_min" in enemy_info and "velocity_max" in enemy_info:
         # Es un asteroide
         vel_min = enemy_info["velocity_min"]
@@ -49,6 +50,8 @@ def crear_cuadrado_enemigo(world: esper.World, pos: pygame.Vector2, enemy_info: 
         )
         enemy_entity = create_sprite(world, pos, velocity, enemy_surface)
         world.add_component(enemy_entity, CTagEnemy())
+        ServiceLocator.sounds_service.play(enemy_info["sound"])
+        
     else:
         velocity = pygame.Vector2(0, 0)
         size = enemy_surface.get_size()
@@ -63,7 +66,7 @@ def crear_cuadrado_enemigo(world: esper.World, pos: pygame.Vector2, enemy_info: 
 
 
 def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dict):
-    player_surface = pygame.image.load(player_info["image"]).convert_alpha()
+    player_surface = ServiceLocator.images_service.get(player_info["image"])
     size = player_surface.get_size()
     size = (size[0] / player_info["animations"]["number_frames"] , size[1])
     pos = pygame.Vector2(player_lvl_info["position"]["x"] - (size[0] / 2),
@@ -76,7 +79,7 @@ def create_player_square(world:esper.World,player_info:dict, player_lvl_info:dic
     return player_entity
 
 def create_explosion_square(world:esper.World, explosion_cfg:dict,c_e_pos:pygame.Vector2):
-    explosion_surface = pygame.image.load(explosion_cfg["image"])
+    explosion_surface = ServiceLocator.images_service.get(explosion_cfg["image"])
     pos = c_e_pos
     vel = pygame.Vector2(0,0)
     
@@ -84,6 +87,8 @@ def create_explosion_square(world:esper.World, explosion_cfg:dict,c_e_pos:pygame
     world.add_component(explosion_entity,CTagExplosion())
     world.add_component(explosion_entity, CAnimation(explosion_cfg["animations"]))
     world.add_component(explosion_entity, CExplosionState())
+
+    ServiceLocator.sounds_service.play(explosion_cfg["sound"])
     return explosion_entity
     
 def create_bullet_square(world: esper.World, player_entity: int, bullet_info: dict, mouse_pos: tuple):
@@ -91,7 +96,7 @@ def create_bullet_square(world: esper.World, player_entity: int, bullet_info: di
     p_transform = world.component_for_entity(player_entity, CTransform)
     player_surface = world.component_for_entity(player_entity, CSurface)
     
-    bullet_surface = pygame.image.load(bullet_info["image"])
+    bullet_surface = ServiceLocator.images_service.get(bullet_info["image"])
     bullet_size = bullet_surface.get_rect().size
     size = player_surface.area.size
     pos = pygame.Vector2(
@@ -110,6 +115,7 @@ def create_bullet_square(world: esper.World, player_entity: int, bullet_info: di
 
     # Agregar el tag de bala
     world.add_component(bullet_entity, CTagBullet())
+    ServiceLocator.sounds_service.play(bullet_info["sound"])
 
     return bullet_entity
 
