@@ -108,12 +108,7 @@ def create_bullet_square(world: esper.World, player_entity: int, bullet_info: di
     direction = (mouse_vector - pos).normalize()
     vel = direction * bullet_info["velocity"]
 
-
-
-    # Crear la bala como una entidad cuadrada
     bullet_entity = create_sprite(world, pos, vel, bullet_surface)
-
-    # Agregar el tag de bala
     world.add_component(bullet_entity, CTagBullet())
     ServiceLocator.sounds_service.play(bullet_info["sound"])
 
@@ -121,7 +116,7 @@ def create_bullet_square(world: esper.World, player_entity: int, bullet_info: di
 
     
 def crear_spawner(ecs_world:esper.World, level_data:dict):
-    spawner_entity = ecs_world.create_entity() #devuelve un entero
+    spawner_entity = ecs_world.create_entity() 
     ecs_world.add_component(spawner_entity,
                                     CEnemySpawner(level_data["enemy_spawn_events"]))
     

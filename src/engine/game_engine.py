@@ -29,7 +29,6 @@ class GameEngine:
     def __init__(self) -> None:
         self._load_config_files()
         pygame.init()
-
         self.screen = pygame.display.set_mode((self.window_cfg["size"]["w"], self.window_cfg["size"]["h"]), 0)
         #Reloj para el motor
         self.clock = pygame.time.Clock()
