@@ -1,3 +1,4 @@
+import os
 import pygame
 import esper
 
@@ -22,6 +23,7 @@ import json
 
 from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
 from src.ecs.systems.s_screen_limit import system_screen_limit
+from src.engine.service_locator import ServiceLocator
 #F5 para correr
         
 class GameEngine:
@@ -30,18 +32,30 @@ class GameEngine:
         self._load_config_files()
         pygame.init()
         self.screen = pygame.display.set_mode((self.window_cfg["size"]["w"], self.window_cfg["size"]["h"]), 0)
-        #Reloj para el motor
+        
         self.clock = pygame.time.Clock()
         self.is_running = False
         self.framerate = self.window_cfg["framerate"]
         self.title = pygame.display.set_caption(self.window_cfg["title"])
-        #Tiempo que ha pasado entre cuadro y cuadro (deltatime)
+        
         self.delta_time = 0
         self.bg_color = pygame.Color(self.window_cfg["bg_color"]["r"],
                                      self.window_cfg["bg_color"]["g"],
                                      self.window_cfg["bg_color"]["b"])
         self.current_bullet = 0
         self.ecs_world = esper.World()
+        
+        self.font_title = ServiceLocator.fonts_service.get(self.interface_cfg["font"],self.interface_cfg["title_size"] )
+        
+        self.text_title = self.font_title.render(self.interface_cfg["title"], True, (self.interface_cfg["title_color"]["r"],
+                                                                                self.interface_cfg["title_color"]["g"],
+                                                                                self.interface_cfg["title_color"]["b"])) 
+        
+        self.font_instr = ServiceLocator.fonts_service.get(self.interface_cfg["font"],self.interface_cfg["instr_size"] )
+        
+        self.text_instr = self.font_instr.render(self.interface_cfg["instr"], True, (self.interface_cfg["instr_color"]["r"],
+                                                                                self.interface_cfg["instr_color"]["g"],
+                                                                                self.interface_cfg["instr_color"]["b"])) 
         
     def run(self) -> None:
         self._create()
@@ -54,6 +68,7 @@ class GameEngine:
         self._clean()
 
     def _create(self):
+        
         self._player_entity = create_player_square(self.ecs_world, self.player_cfg,self.level_01_cfg["player_spawn"])
         self._player_c_vel = self.ecs_world.component_for_entity(self._player_entity, CVelocity)
         crear_spawner(self.ecs_world, self.level_01_cfg)
@@ -91,11 +106,11 @@ class GameEngine:
             
 
     def _draw(self):
-        #decirle al sistema que limpie la pantalla y dibuje lo que necesitamos
         self.screen.fill(self.bg_color)
-        
+        self.screen.blit(self.text_title, (20, 20))
+        self.screen.blit(self.text_instr, (20, 50))
         system_rendering(self.ecs_world, self.screen)
-        pygame.display.flip() #voltear la imagen hacia la pantalla. coge el self screen y lo presenta
+        pygame.display.flip()
         
 
     def _clean(self):
@@ -155,6 +170,8 @@ class GameEngine:
             self.bullet_cfg = json.load(bullet_file)
         with open('assets/cfg/explosion.json','r') as explosion_file:
             self.explosion_cfg = json.load(explosion_file)
+        with open('assets/cfg/interface.json','r') as interface_file:
+            self.interface_cfg = json.load(interface_file)
     
         
 

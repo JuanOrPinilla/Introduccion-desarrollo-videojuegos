@@ -1,10 +1,17 @@
 {
     "font": "assets/fnt/PressStart2P.ttf",
-    "text": "assets/img/bullet.png",
-    "color":{
+    "title": "EJERCICIO 04",
+    "instr": "Controles: Flechas, click izquierdo, click derecho para dash",
+    "title_color":{
         "r": 255,
         "g": 255,
         "b": 255
     },
-    "size": 20
+    "title_size": 15,
+    "instr_size": 10,
+    "instr_color":{
+        "r": 255,
+        "g": 255,
+        "b": 0
+    }
 }

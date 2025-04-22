@@ -132,3 +132,4 @@ def create_input_player(world:esper.World):
     world.add_component(input_up,CInputCommand("PLAYER_UP", pygame.K_UP))
     world.add_component(input_down,CInputCommand("PLAYER_DOWN", pygame.K_DOWN))
     world.add_component(input_leftclick, CInputCommand("PLAYER_FIRE", 1))
+    
