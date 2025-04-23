@@ -2,7 +2,7 @@ import os
 import pygame
 import esper
 
-from src.create.prefab_creator import crear_spawner, create_bullet_square, create_input_player, create_player_square
+from src.create.prefab_creator import crear_spawner, create_bullet_square, create_dash_effect, create_input_player, create_player_square
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
@@ -180,6 +180,13 @@ class GameEngine:
             if self._dash_counter == self._dash_max:
                 if c_input.phase == CommandPhase.START:
                     mouse_pos = pygame.mouse.get_pos()
+                    create_dash_effect(self.ecs_world, self._player_entity, -60, mouse_pos)
+                    create_dash_effect(self.ecs_world, self._player_entity, -30, mouse_pos)
+                    create_dash_effect(self.ecs_world, self._player_entity, 0, mouse_pos)
+                    create_dash_effect(self.ecs_world, self._player_entity, 30, mouse_pos)
+                    create_dash_effect(self.ecs_world, self._player_entity, 60, mouse_pos)
+                    ServiceLocator.sounds_service.play("assets/snd/dash.ogg")
+
                     system_dash(self.ecs_world, self._player_entity, mouse_pos, self.delta_time)
                     self._dash_counter = 0  
                     self._is_dashing = True
@@ -196,10 +203,10 @@ class GameEngine:
                                                                                 self.interface_cfg["prct_color_1"]["g"],
                                                                                 self.interface_cfg["prct_color_1"]["b"]))
         else:
-            text = self.font_instr.render("Dash Listo!", True, (self.interface_cfg["prct_color_2"]["r"],
+            text = self.font_instr.render("Dash protector Listo!", True, (self.interface_cfg["prct_color_2"]["r"],
                                                                                 self.interface_cfg["prct_color_2"]["g"],
                                                                                 self.interface_cfg["prct_color_2"]["b"]))
-        surface.blit(text, (20, 300))
+        surface.blit(text, (20, 340))
 
         
     def _load_config_files(self):

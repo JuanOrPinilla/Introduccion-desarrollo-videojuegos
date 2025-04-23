@@ -1,3 +1,4 @@
+import math
 import random
 import esper
 import pygame
@@ -12,6 +13,7 @@ from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
+from src.ecs.components.tags.c_tag_dash import CTagDash
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
 from src.ecs.components.tags.c_tag_explosion import CTagExplosion
 from src.ecs.components.tags.c_tag_hunter import CTagHunter
@@ -111,8 +113,38 @@ def create_bullet_square(world: esper.World, player_entity: int, bullet_info: di
     bullet_entity = create_sprite(world, pos, vel, bullet_surface)
     world.add_component(bullet_entity, CTagBullet())
     ServiceLocator.sounds_service.play(bullet_info["sound"])
-
     return bullet_entity
+
+def create_dash_effect(world: esper.World, player_entity: int, variacion_angle: float, mouse_pos: tuple):
+    p_transform = world.component_for_entity(player_entity, CTransform)
+    player_surface = world.component_for_entity(player_entity, CSurface)
+    star_surface = ServiceLocator.images_service.get("assets/img/star.png")
+    star_size = star_surface.get_rect().size
+
+    size = player_surface.area.size
+    pos_centro = pygame.Vector2(
+        p_transform.pos.x + (size[0] / 2) - (star_size[0] / 2),
+        p_transform.pos.y + (size[1] / 2) - (star_size[1] / 2)
+    )
+
+    mouse_vector = pygame.Vector2(mouse_pos)
+    direction = (mouse_vector - pos_centro).normalize()
+    reverse_dir = -direction
+
+    angle_rad = math.radians(variacion_angle)
+    rotated_dir = pygame.Vector2(
+        reverse_dir.x * math.cos(angle_rad) - reverse_dir.y * math.sin(angle_rad),
+        reverse_dir.x * math.sin(angle_rad) + reverse_dir.y * math.cos(angle_rad)
+    )
+
+    spawn_pos = pos_centro + rotated_dir * 10 
+
+
+    vel = rotated_dir * 60
+
+    star_entity = create_sprite(world, spawn_pos, vel, star_surface)
+    world.add_component(star_entity, CTagDash())
+    return star_entity
 
     
 def crear_spawner(ecs_world:esper.World, level_data:dict):
