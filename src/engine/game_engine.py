@@ -10,6 +10,7 @@ from src.ecs.systems.s_animation import system_animation
 from src.ecs.systems.s_collision_bullet_border import system_collision_bullet_screen
 from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
 from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
+from src.ecs.systems.s_dash import system_dash
 from src.ecs.systems.s_explosion_state import system_explosion_state
 from src.ecs.systems.s_hunter_persecution import system_persecution_player_hunter
 from src.ecs.systems.s_hunter_state import system_hunter_state
@@ -56,6 +57,11 @@ class GameEngine:
         self.text_instr = self.font_instr.render(self.interface_cfg["instr"], True, (self.interface_cfg["instr_color"]["r"],
                                                                                 self.interface_cfg["instr_color"]["g"],
                                                                                 self.interface_cfg["instr_color"]["b"])) 
+        self._is_dashing = False
+        self._dash_duration = 0.2
+        self._dash_timer = 0
+        self._dash_counter =3
+        self._dash_max = 3
         
     def run(self) -> None:
         self._create()
@@ -82,8 +88,8 @@ class GameEngine:
     def _process_events(self):
         for event in pygame.event.get(): #Da una lista de eventos
             system_input_player(self.ecs_world, event, self._do_action)
-            if event.type == pygame.QUIT: #cuando se cierra con la X la ventana o uno presiona alt F4
-                self.is_running = False #terminar el ciclo
+            if event.type == pygame.QUIT: 
+                self.is_running = False
 
     def _update(self):
         system_enemy_spawner(self.ecs_world,self.enemies_cfg, self.delta_time)
@@ -92,6 +98,18 @@ class GameEngine:
         system_player_state(self.ecs_world)
         system_hunter_state(self.ecs_world)
         
+        if self._is_dashing:
+            self._dash_timer += self.delta_time
+            if self._dash_timer >= self._dash_duration:
+                self._player_c_vel.vel.x = 0
+                self._player_c_vel.vel.y = 0
+                self._is_dashing = False
+        
+        self._dash_counter += self.delta_time
+        if self._dash_counter >= self._dash_max:
+            self._dash_counter = self._dash_max
+
+
         system_screen_bounce(self.ecs_world, self.screen)
         system_screen_limit(self.ecs_world,self.screen)
         system_collision_player_enemy(self.ecs_world,self._player_entity, self.level_01_cfg)
@@ -103,12 +121,14 @@ class GameEngine:
         system_animation(self.ecs_world, self.delta_time)
         system_explosion_state(self.ecs_world, self.delta_time)
         self.ecs_world._clear_dead_entities()
+        
             
 
     def _draw(self):
         self.screen.fill(self.bg_color)
         self.screen.blit(self.text_title, (20, 20))
         self.screen.blit(self.text_instr, (20, 50))
+        self.draw_dash_timer(self.screen)
         system_rendering(self.ecs_world, self.screen)
         pygame.display.flip()
         
@@ -132,7 +152,7 @@ class GameEngine:
             elif c_input.phase == CommandPhase.END:
                 if self._player_c_vel.vel.x > 0:
                     self._player_c_vel.vel.x = 0
-
+ 
                 
         if c_input.name == "PLAYER_UP":
             if c_input.phase == CommandPhase.START:
@@ -155,8 +175,33 @@ class GameEngine:
                 if c_input.phase == CommandPhase.START:
                     mouse_pos = pygame.mouse.get_pos()
                     create_bullet_square(self.ecs_world, self._player_entity, self.bullet_cfg, mouse_pos)
+        
+        if c_input.name == "DASH":
+            if self._dash_counter == self._dash_max:
+                if c_input.phase == CommandPhase.START:
+                    mouse_pos = pygame.mouse.get_pos()
+                    system_dash(self.ecs_world, self._player_entity, mouse_pos, self.delta_time)
+                    self._dash_counter = 0  
+                    self._is_dashing = True
+                    self._dash_timer = 0  # reiniciar el contador
+                elif c_input.phase == CommandPhase.END:
+                    self._player_c_vel.vel.x = 0
+                    self._player_c_vel.vel.y = 0
 
 
+    def draw_dash_timer(self, surface):
+        if self._dash_counter < self._dash_max:
+            porcentaje = int((self._dash_counter / self._dash_max) * 100)
+            text = self.font_instr.render(f"Dash: {porcentaje}%", True, (self.interface_cfg["prct_color_1"]["r"],
+                                                                                self.interface_cfg["prct_color_1"]["g"],
+                                                                                self.interface_cfg["prct_color_1"]["b"]))
+        else:
+            text = self.font_instr.render("Dash Listo!", True, (self.interface_cfg["prct_color_2"]["r"],
+                                                                                self.interface_cfg["prct_color_2"]["g"],
+                                                                                self.interface_cfg["prct_color_2"]["b"]))
+        surface.blit(text, (20, 300))
+
+        
     def _load_config_files(self):
         with open('assets/cfg/window.json','r') as window_file:
                 self.window_cfg = json.load(window_file)       
