@@ -159,6 +159,7 @@ def create_input_player(world:esper.World):
     input_down = world.create_entity()
     input_leftclick = world.create_entity()
     input_rightclick = world.create_entity()
+    input_pause = world.create_entity()
     
     world.add_component(input_left,CInputCommand("PLAYER_LEFT", pygame.K_LEFT))
     world.add_component(input_right,CInputCommand("PLAYER_RIGHT", pygame.K_RIGHT))
@@ -166,4 +167,5 @@ def create_input_player(world:esper.World):
     world.add_component(input_down,CInputCommand("PLAYER_DOWN", pygame.K_DOWN))
     world.add_component(input_leftclick, CInputCommand("PLAYER_FIRE", 1))
     world.add_component(input_rightclick, CInputCommand("DASH", 3))
+    world.add_component(input_pause, CInputCommand("PAUSE_GAME", pygame.K_p))
     

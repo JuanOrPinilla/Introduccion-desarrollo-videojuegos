@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pygame
 import esper
@@ -57,21 +58,30 @@ class GameEngine:
         self.text_instr = self.font_instr.render(self.interface_cfg["instr"], True, (self.interface_cfg["instr_color"]["r"],
                                                                                 self.interface_cfg["instr_color"]["g"],
                                                                                 self.interface_cfg["instr_color"]["b"])) 
+        
+        self.font_pause = ServiceLocator.fonts_service.get(self.interface_cfg["font"],self.interface_cfg["title_size"] )
+        self.text_pause = self.font_pause.render(self.interface_cfg["instr"], True, (self.interface_cfg["instr_color"]["r"],
+                                                                                self.interface_cfg["instr_color"]["g"],
+                                                                                self.interface_cfg["instr_color"]["b"])) 
         self._is_dashing = False
         self._dash_duration = 0.2
         self._dash_timer = 0
         self._dash_counter =3
         self._dash_max = 3
         
-    def run(self) -> None:
+    async def run(self) -> None:
         self._create()
         self.is_running = True
+        self._is_paused = False 
         while self.is_running:
             self._calculate_time()
             self._process_events()
-            self._update()
+            if not self._is_paused:
+                self._update()
             self._draw()
+            await asyncio.sleep(0)
         self._clean()
+
 
     def _create(self):
         
@@ -82,11 +92,11 @@ class GameEngine:
 
 
     def _calculate_time(self):
-        self.delta_time = self.clock.tick(self.framerate) / 1000.0  # Delta en segundos
+        self.delta_time = self.clock.tick(self.framerate) / 1000.0
     
     
     def _process_events(self):
-        for event in pygame.event.get(): #Da una lista de eventos
+        for event in pygame.event.get():
             system_input_player(self.ecs_world, event, self._do_action)
             if event.type == pygame.QUIT: 
                 self.is_running = False
@@ -125,10 +135,13 @@ class GameEngine:
             
 
     def _draw(self):
+            
         self.screen.fill(self.bg_color)
         self.screen.blit(self.text_title, (20, 20))
         self.screen.blit(self.text_instr, (20, 50))
         self.draw_dash_timer(self.screen)
+        if getattr(self, '_is_paused', False):
+            self.draw_pause_message(self.screen)
         system_rendering(self.ecs_world, self.screen)
         pygame.display.flip()
         
@@ -138,8 +151,9 @@ class GameEngine:
         pygame.quit()
 
     def _do_action(self, c_input:CInputCommand):
-        
         if c_input.name == "PLAYER_LEFT":
+            if getattr(self, '_is_paused', False):
+                return 
             if c_input.phase == CommandPhase.START:
                 self._player_c_vel.vel.x = -self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
@@ -147,6 +161,8 @@ class GameEngine:
                     self._player_c_vel.vel.x = 0
 
         if c_input.name == "PLAYER_RIGHT":
+            if getattr(self, '_is_paused', False):
+                return 
             if c_input.phase == CommandPhase.START:
                 self._player_c_vel.vel.x = self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
@@ -155,6 +171,8 @@ class GameEngine:
  
                 
         if c_input.name == "PLAYER_UP":
+            if getattr(self, '_is_paused', False):
+                return 
             if c_input.phase == CommandPhase.START:
                 self._player_c_vel.vel.y = -self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
@@ -162,6 +180,8 @@ class GameEngine:
                     self._player_c_vel.vel.y = 0
 
         if c_input.name == "PLAYER_DOWN":
+            if getattr(self, '_is_paused', False):
+                return 
             if c_input.phase == CommandPhase.START:
                 self._player_c_vel.vel.y = self.player_cfg["input_velocity"]
             elif c_input.phase == CommandPhase.END:
@@ -169,6 +189,8 @@ class GameEngine:
                     self._player_c_vel.vel.y = 0
         
         if c_input.name == "PLAYER_FIRE":
+            if getattr(self, '_is_paused', False):
+                return 
             active_bullets = len(self.ecs_world.get_components(CTagBullet))
 
             if active_bullets < self.level_01_cfg["player_spawn"]["max_bullets"]:
@@ -177,6 +199,8 @@ class GameEngine:
                     create_bullet_square(self.ecs_world, self._player_entity, self.bullet_cfg, mouse_pos)
         
         if c_input.name == "DASH":
+            if getattr(self, '_is_paused', False):
+                return 
             if self._dash_counter == self._dash_max:
                 if c_input.phase == CommandPhase.START:
                     mouse_pos = pygame.mouse.get_pos()
@@ -185,15 +209,18 @@ class GameEngine:
                     create_dash_effect(self.ecs_world, self._player_entity, 0, mouse_pos)
                     create_dash_effect(self.ecs_world, self._player_entity, 30, mouse_pos)
                     create_dash_effect(self.ecs_world, self._player_entity, 60, mouse_pos)
-                    ServiceLocator.sounds_service.play("assets/snd/dash.ogg")
+                    ServiceLocator.sounds_service.play("assets/sfx/dash.ogg")
 
                     system_dash(self.ecs_world, self._player_entity, mouse_pos, self.delta_time)
                     self._dash_counter = 0  
                     self._is_dashing = True
-                    self._dash_timer = 0  # reiniciar el contador
+                    self._dash_timer = 0 
                 elif c_input.phase == CommandPhase.END:
                     self._player_c_vel.vel.x = 0
                     self._player_c_vel.vel.y = 0
+        if c_input.name == "PAUSE_GAME":
+            if c_input.phase == CommandPhase.START:
+                self._is_paused = not getattr(self, '_is_paused', False)
 
 
     def draw_dash_timer(self, surface):
@@ -208,7 +235,12 @@ class GameEngine:
                                                                                 self.interface_cfg["prct_color_2"]["b"]))
         surface.blit(text, (20, 340))
 
-        
+    def draw_pause_message(self, surface):
+        text = self.font_pause.render("PAUSA", True, (self.interface_cfg["prct_color_1"]["r"],
+                                                                                self.interface_cfg["prct_color_1"]["g"],
+                                                                                self.interface_cfg["prct_color_1"]["b"]))
+        surface.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, (self.screen.get_height() // 2 - text.get_height() // 2)-40))
+      
     def _load_config_files(self):
         with open('assets/cfg/window.json','r') as window_file:
                 self.window_cfg = json.load(window_file)       
